@@ -1,4 +1,3 @@
-## pfSense_widgets
 ## DHCP Leases widget for pfSense
 This is a modified version of the [original](https://github.com/bobbyearl/pfSense-DHCP-leases-widget) by Bobby Earl.
 
