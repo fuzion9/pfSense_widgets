@@ -2,7 +2,8 @@
 ## DHCP Leases widget for pfSense
 This is a modified version of the [original](https://github.com/bobbyearl/pfSense-DHCP-leases-widget) by Bobby Earl.
 
-A [Screeshot](http://fuzionconsulting.ca/wp/pfsense-widgets/) is available.
+![dhcp-leases](https://cloud.githubusercontent.com/assets/1909283/9189175/b170ef42-3fb2-11e5-892e-ea8c79a8fe95.jpg)
+[Screeshot](http://fuzionconsulting.ca/wp/pfsense-widgets/)
 
 
 ####Installation
