@@ -185,7 +185,7 @@ if(count($pools) > 0) {
 	$pools = remove_duplicate($pools,"name");
 	asort($pools);
 }
-
+$static_count = 0;
 foreach($config['interfaces'] as $ifname => $ifarr) {
 	if (is_array($config['dhcpd'][$ifname]) && 
 		is_array($config['dhcpd'][$ifname]['staticmap'])) {
@@ -196,6 +196,7 @@ foreach($config['interfaces'] as $ifname => $ifarr) {
 			$slease['mac'] = $static['mac'];
 			$slease['start'] = "";
 			$slease['end'] = "";
+                        $slease['descr'] = $static['descr'];;
 			$slease['hostname'] = "<strong>".htmlentities($static['hostname'])."</strong>";
 			$slease['act'] = "static";
 			$online = exec("/usr/sbin/arp -an |/usr/bin/grep {$slease['mac']}| /usr/bin/wc -l|/usr/bin/awk '{print $1;}'");
@@ -206,6 +207,7 @@ foreach($config['interfaces'] as $ifname => $ifarr) {
 				$slease['online'] = 'offline';
                                 $slease['status'] = "<span style='color:red'>Offline</span>";
 			}
+                        $static_count++;
 			$leases[] = $slease;
 		}
 	}
@@ -213,14 +215,21 @@ foreach($config['interfaces'] as $ifname => $ifarr) {
 
 ?>
 <table class="tabcont sortable" width="100%" border="0" cellpadding="0" cellspacing="0">
+    <form action='pkg_edit.php' name='doNmap' id='doNmap' method="post">
+        <input type='hidden' name='xml' value='nmap.xml'>
+        <input type='hidden' name='hostname' value=''>
+        <input type='hidden' name='scanmethod' value='syn'>
+        <input type='hidden' name='id' value='0'>
+        <input type='hidden' name='Submit' value='Scan'>
   <tr>
     <td class="listhdrr"><a href="#"><?=gettext("IP address"); ?></a></td>
     <td class="listhdrr"><a href="#"><?=gettext("Hostname"); ?></a></td>
+    <td class="listhdrr"><a href="#"><?=gettext("Description"); ?></a></td>
     <td class="listhdrr"><a href="#"><?=gettext("Lease Type"); ?></a></td>
     <td class="listhdrr"><a href="#"><?=gettext("Status"); ?></a></td>
 	</tr>
 <?php
-$dynamic_leases=0;
+$active_leases=0;
 foreach ($leases as $data) {
 	if (($data['act'] == "active") || ($data['act'] == "static") || ($_GET['all'] == 1)) {
                 
@@ -243,36 +252,45 @@ foreach ($leases as $data) {
 					}
 				}
 				/* exit as soon as we have an interface */
-				if ($data['if'] != "")
-                                        $dynamic_leases++;
+				if ($data['if'] != "")                                        
 					break;
 			}
 		} else {
-            foreach ($config['dhcpd'] as $dhcpif => $dhcpifconf) {	
-               	if (($lip >= ip2ulong($dhcpifconf['range']['from'])) && ($lip <= ip2ulong($dhcpifconf['range']['to']))) {
-                   	$data['if'] = $dhcpif;
-                   	break;
-				}
-			}
-		}		
-		echo "<tr>\n";
-		echo "<td class=\"listlr\">{$fspans}{$data['ip']}{$fspane}&nbsp;</td>\n";
-		echo "<td class=\"listr\">{$fspans}"  . $data['hostname'] . "{$fspane}&nbsp;</td>\n";
-                echo "<td class=\"listr\">{$fspans}"  . $data['type'] . "{$fspane}&nbsp;</td>\n";
-                echo "<td class=\"listr\">{$fspans}"  . $data['status'] . "{$fspane}&nbsp;</td>\n";
-		echo "</tr>\n";
-	}
-}
-?>
+                    $active_leases++;
+                    foreach ($config['dhcpd'] as $dhcpif => $dhcpifconf) {	
+                    if (($lip >= ip2ulong($dhcpifconf['range']['from'])) && ($lip <= ip2ulong($dhcpifconf['range']['to']))) {
+                            $data['if'] = $dhcpif;
+                               break;
+                            }
+                    }
+                 }                
+                                
+                ?>
+                <tr>
+		<td class="listlr">                
+                    <span class='hover' onclick="requestNmapScan('<?=$data['ip']?>')" style="cursor:pointer; white-space:nowrap;">
+                    <?=$fspans?><?=$data['ip']?><?=$fspane?>
+                    </span>
+                </td>
+		<td class="listr"><?=$fspans?><?=$data['hostname']?><?=$fspane?>
+		<td class="listr"><?=$fspans?><?=$data['descr']?><?=$fspane?>
+                <td class="listr"><?=$fspans?><?=$data['type']?><?=$fspane?>
+                <td class="listr"><?=$fspans?><?=$data['status']?><?=$fspane?>
+		</tr>
+                <?
+	 }
+        
+}?>
+</form>
 </table>
 <table class="tabcont" width="100%" border="0" cellpadding="0" cellspacing="0">
     <tr>
         <td class="listhdrr">
-            <span style="float:left">Active Dynamic Leases: (<?=$dynamic_leases?>/<?=$leases_count?>)</span>
-            <span style="float:right">Static Leases: <?=count($slease)?></span>
+            <span style="float:left">Active Dynamic Leases: <?=$active_leases?>/<?=$leases_count?></span>
+            <span style="float:right">Static Leases: <?=$static_count?></span>
         </td>
     </tr>
 </table>
-<?php if($leases == 0): ?>
+<?php if($leases == 0){ ?>
 <p><strong><?=gettext("No leases file found. Is the DHCP server active"); ?>?</strong></p>
-<?php endif; ?>
+<?php } ?>
