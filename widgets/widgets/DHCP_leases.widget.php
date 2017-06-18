@@ -269,12 +269,6 @@ foreach ($config['interfaces'] as $ifname => $ifarr) {
 ?>
 <div class="table-responsive">
 	<table class="table table-striped table-hover table-condensed">
-    <form action='pkg_edit.php' name='doNmap' id='doNmap' method="post">
-        <input type='hidden' name='xml' value='nmap.xml'>
-        <input type='hidden' name='hostname' value=''>
-        <input type='hidden' name='scanmethod' value='syn'>
-        <input type='hidden' name='id' value='0'>
-        <input type='hidden' name='Submit' value='Scan'>
 		<thead>
 			<tr>
 				<th><?=gettext("IP address"); ?></th>
@@ -370,7 +364,6 @@ if ($no_leases_displayed):
 endif;
 ?>
 		</tbody>
-	</form>
 	</table>
 </div>
 <div class="table-responsive">
